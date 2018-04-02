@@ -29,6 +29,32 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe "GET #show_all_for_user" do
+    ##returns all valid subscriptions given a user
+
+    before do
+      get :show_all_for_user, email: user.email
+    end
+
+    let(:user) { User.create(name: "Test User", email: "totally@realemail.com") }
+    let(:subscription) { Subscription.create(paid: true, billing_date: Time.now) }
+
+    it "returns http success" do
+      expect(response).to have_http_status(:success)
+    end
+
+    ##returns all subscriptions given a specific user
+    it "response with JSON body containing paid status and next billing date" do
+      hash_body = nil
+      expect { hash_body = JSON.parse(response.body).with_indifferent_access }.not_to raise_exception
+      expect(hash_body).to match({
+        id: subscription.id,
+        paid: true,
+        billing_date: 1.month.from_now
+      })
+    end
+  end
+
   describe "INDEX #index" do
     ## Index of all subscriptions
     before do
