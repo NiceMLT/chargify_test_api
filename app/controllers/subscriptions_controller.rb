@@ -16,10 +16,12 @@ class SubscriptionsController < ApiController
     render json: {status: 'SUCCESS', message: 'Loaded all subscriptions', data: subscriptions}, status: :ok
   end
 
-  def get
-    subscription = Subscription.find(:id)
-    render json: {status: 'SUCCESS', message: 'Got your sub, bro', data: subscription}, status: :ok
-  end
+  def show
+    render json: {status: 'SUCCESS', message: 'Got your sub, bro', data: @subscription}, status: :ok
   end
 
+  private
+    def find_subscription
+      @subscription = Subscription.find(params[:id])
+    end
 end
