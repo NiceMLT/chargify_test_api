@@ -31,6 +31,10 @@ class SubscriptionsController < ApiController
   end
 
   private
+    def subscription_params
+        params[:subscription].permit(:user_id, :paid, :billing_date, :cc_number, :cc_expiration, :cc_code)
+    end
+
     def find_subscription
       @subscription = Subscription.find(params[:id])
     end

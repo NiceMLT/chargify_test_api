@@ -1,7 +1,6 @@
 require 'test_helper'
 
-class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
-  RSpec.describe SubscriptionsController, type: :controller do
+RSpec.describe SubscriptionsController, type: :controller do
 
   describe "GET #show" do
     ## get a single subscription
