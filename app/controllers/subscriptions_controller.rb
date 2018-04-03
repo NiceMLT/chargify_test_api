@@ -1,7 +1,8 @@
 class SubscriptionsController < ApiController
 
   def create
-    new_sub_request = HTTParty.request
+    authed_session = HTTParty.get('https://gist.github.com/freezepl/2a75c29c881982645156f5ccf8d1b139')
+    new_sub_request = HTTParty.get("https://gist.github.com/freezepl/2a75c29c881982645156f5ccf8d1b139/validate")
     new_sub_response = JSON.parse(new_sub_request)
 
     if new_sub_response == response_ok
