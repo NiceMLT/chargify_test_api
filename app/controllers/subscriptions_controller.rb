@@ -1,16 +1,18 @@
 class SubscriptionsController < ApiController
 
   def create
-    new_sub_response = HTTParty.request
+    new_sub_request = HTTParty.request
+    new_sub_response = JSON.parse(new_sub_request)
 
-    if response_ok
+    if new_sub_response == response_ok
       subscription = Subscription.new(params)
       return "subscription created and payment successful"
-    elsif response_fail
+    elsif new_sub_response == response_fail
       return "subscription not created due to insufficient funds"
-    elsif response_timeout
+    elsif new_sub_response == response_timeout
+      sleep 15
       #do that stuff again
-    elsif response_503
+    elsif new_sub_response == response_503
       return "Service Unavailable"
     end
   end

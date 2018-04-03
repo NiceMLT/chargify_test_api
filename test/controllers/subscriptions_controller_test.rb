@@ -4,9 +4,7 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
   RSpec.describe SubscriptionsController, type: :controller do
 
   describe "GET #show" do
-    ## get subscription_info
-    returns all valid subscriptions given a user
-
+    ## get a single subscription
     before do
       get :show, id: subscription.id
     end
@@ -37,20 +35,27 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     let(:user) { User.create(name: "Test User", email: "totally@realemail.com") }
-    let(:subscription) { Subscription.create(paid: true, billing_date: Time.now) }
+    let(:user_sub1) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
+    let(:user_sub2) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
+    let(:user_sub3) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
 
     it "returns http success" do
       expect(response).to have_http_status(:success)
     end
 
     ##returns all subscriptions given a specific user
-    it "response with JSON body containing paid status and next billing date" do
+    it "response with JSON body containing all subs for user" do
       hash_body = nil
       expect { hash_body = JSON.parse(response.body).with_indifferent_access }.not_to raise_exception
-      expect(hash_body).to match({
-        id: subscription.id,
+      expect(hash_body.first).to match({
+        id: user_sub1.id,
         paid: true,
-        billing_date: 1.month.from_now
+        cost: 100
+      })
+      expect(hash_body.last).to match({
+        id: user_sub3.id,
+        paid: true,
+        cost: 100
       })
     end
   end
@@ -62,6 +67,8 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     let(:subscriptions) { Subscription.all }
+    let(:sub1) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
+    let(:sub2) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
 
     it "returns http success" do
       expect(response).to have_http_status(:success)
@@ -71,13 +78,15 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
       hash_body = nil
       expect { hash_body = JSON.parse(response.body).with_indifferent_access }.not_to raise_exception
       expect(hash_body.first).to match({
-        id: subscriptions.first.id
+        id: subscriptions.first.id,
+        paid: true,
+        cost: 100
       })
     end
   end
 
   describe "CREATE #create" do
-    let(:good_sub) { Subscription.create(paid: true, billing_date: Time.now) }
+    let(:good_sub) { Subscription.create(paid: true, billing_date: Time.now, cost: 100) }
     let(:bad_sub) { Subscription.create(paid: false) }
 
     describe "Success" do
@@ -122,13 +131,13 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    describe "Timeout" do
-      #timeout
-      # subscription charge is retried if the payment gateway times out
-      it "retries on timeout or error" do
-
-      end
-    end
+    # describe "Timeout" do
+    #   #timeout
+    #   # subscription charge is retried if the payment gateway times out
+    #   # it "retries on timeout or error" do
+    #   #
+    #   # end
+    # end
   end
 
   ## bonus (should this be in the model?)
