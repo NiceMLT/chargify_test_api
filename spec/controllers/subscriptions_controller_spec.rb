@@ -1,4 +1,4 @@
-require 'test_helper'
+require 'spec_helper'
 
 RSpec.describe SubscriptionsController, type: :controller do
 
