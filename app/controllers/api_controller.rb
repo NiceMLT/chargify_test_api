@@ -1,3 +1,3 @@
 class ApiController < ApplicationController
-  ##Auth goes here
+  # #Auth goes here
 end
