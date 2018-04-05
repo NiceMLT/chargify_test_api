@@ -10,6 +10,7 @@ validates :cc_number, format: { with: ^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]
       user_id: user_id,
       paid: paid,
       billing_date: billing_date,
+      amount: amount,
       cc_number: cc_number,
       cc_expiration: cc_expiration,
       cc_code: cc_code
