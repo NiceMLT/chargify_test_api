@@ -34,8 +34,8 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'httparty'
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'rspec'
+  gem 'sinatra'
+  gem 'rspec-rails', '~> 3.7'
 end
 
 group :development do

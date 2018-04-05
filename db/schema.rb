@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180405124010) do
+ActiveRecord::Schema.define(version: 20180405164805) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,9 +20,9 @@ ActiveRecord::Schema.define(version: 20180405124010) do
     t.string "paid"
     t.datetime "billing_date"
     t.integer "cost"
-    t.integer "cc_number"
-    t.integer "cc_expiration"
-    t.integer "cc_code"
+    t.string "cc_number"
+    t.string "cc_expiration"
+    t.string "cc_code"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string "payment_id"

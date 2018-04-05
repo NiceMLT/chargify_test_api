@@ -1,5 +1,7 @@
 class SubscriptionsController < ApiController
 
+  before_action :create_session, only: %i[create]
+
   # GET /subscriptions/new
   def new
     @subscription = Subscription.new
@@ -7,23 +9,15 @@ class SubscriptionsController < ApiController
 
   # POST /subscriptions
   def create
-    if authed_payment_session
-      new_sub_request = HTTParty.get('https://gist.github.com/freezepl/2a75c29c881982645156f5ccf8d1b139/validate')
-      new_sub_response = JSON.parse(new_sub_request)
-
-      if new_sub_response == response_ok
-        subscription = Subscription.new(subscription_params)
-        return 'subscription created and payment successful'
-      elsif new_sub_response == response_fail
-        return 'subscription not created due to insufficient funds'
-      elsif new_sub_response == response_timeout
-        sleep 15
-        # do that stuff again
-      elsif new_sub_response == response_503
-        return 'Service Unavailable'
-      end
-    else
-      return 'Invalid session'
+    requester = Requester.new
+    if requester.paid?
+      subscription = Subscription.new(subscription_params)
+      return 'subscription created and payment successful'
+    elsif requester.insufficient_funds?
+      return 'subscription not created due to insufficient funds'
+    elsif requester.error?
+      sleep 15
+      # retry
     end
   end
 
@@ -44,6 +38,10 @@ class SubscriptionsController < ApiController
   end
 
   private
+
+  def create_session
+    HTTParty.get('https://gist.github.com/freezepl/2a75c29c881982645156f5ccf8d1b139/')
+  end
 
   def subscription_params
     params[:subscription].permit(:user_id, :paid, :billing_date, :amount, :cc_number, :cc_expiration, :cc_code)
