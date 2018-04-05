@@ -76,8 +76,15 @@ RSpec.describe SubscriptionsController, type: :controller do
   end
 
   describe 'CREATE #create' do
+
     let(:good_sub) { Subscription.create(paid: true, billing_date: Time.now, cost: 100) }
     let(:bad_sub) { Subscription.create(paid: false) }
+
+    describe 'auth' do
+      it 'returns not authorized if no authed session is present' do
+        expect(response.body).to_be "Not Authorized"
+      end
+    end
 
     describe 'Success' do
       # subscription is persisted in the database if successful
@@ -87,12 +94,12 @@ RSpec.describe SubscriptionsController, type: :controller do
 
       # api returns a message of "subscription created and payment successful" if successful
       it 'returns subscription created and payment successful when the payment is successful' do
-        expect(response.body).to_be 'subscription created and payment successful'
+        expect(good_sub.response.body).to_be 'subscription created and payment successful'
       end
 
-      it 'returns a response with JSON body containing paid status and failure_message' do
+      it 'returns a response with JSON body containing paid status and nil failure_message' do
         hash_body = nil
-        expect { hash_body = JSON.parse(response.body).with_indifferent_access }.not_to raise_exception
+        expect { hash_body = JSON.parse(good_sub.response.body).with_indifferent_access }.not_to raise_exception
         expect(hash_body).to match(paid: true,
                                    failure_message: nil)
       end
@@ -106,12 +113,12 @@ RSpec.describe SubscriptionsController, type: :controller do
 
       # api returns a message of "subscription not created due to insufficient funds" if unsuccessful due to NSF
       it 'returns subscription not created due to insufficient funds when the payment is insufficient funds' do
-        expect(response.body).to_be 'subscription not created due to insufficient funds'
+        expect(bad_sub.response.body).to_be 'subscription not created due to insufficient funds'
       end
 
       it 'returns a response with JSON body containing paid status and failure_message' do
         hash_body = nil
-        expect { hash_body = JSON.parse(response.body).with_indifferent_access }.not_to raise_exception
+        expect { hash_body = JSON.parse(bad_sub.response.body).with_indifferent_access }.not_to raise_exception
         expect(hash_body).to match(paid: false,
                                    failure_message: 'insufficient_funds')
       end
