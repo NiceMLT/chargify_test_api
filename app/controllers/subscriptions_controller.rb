@@ -1,5 +1,4 @@
 class SubscriptionsController < ApiController
-
   # GET /subscriptions/new
   def new
     @subscription = Subscription.new
@@ -27,7 +26,7 @@ class SubscriptionsController < ApiController
     end
   end
 
-  #GET /subscriptions
+  # GET /subscriptions
   def index
     subscriptions = Subscription.all
     render json: { status: 'SUCCESS', message: 'Loaded all subscriptions', data: subscriptions }, status: :ok
