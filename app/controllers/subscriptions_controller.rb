@@ -12,7 +12,7 @@ class SubscriptionsController < ApiController
       new_sub_response = JSON.parse(new_sub_request)
 
       if new_sub_response == response_ok
-        subscription = Subscription.new(subscription_params)
+        Subscription.new(subscription_params)
         return 'subscription created and payment successful'
       elsif new_sub_response == response_fail
         return 'subscription not created due to insufficient funds'
