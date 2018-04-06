@@ -29,12 +29,19 @@ class SubscriptionsController < ApiController
 
   # GET /subscriptions/1
   def show
+    find_subscription
     render json: { status: 'SUCCESS', message: 'Got your sub, bro', data: @subscription }, status: :ok
   end
 
   # GET /subscriptions/user_id?{@user}
   def show_all_for_user
+    find_subscriptions_for_user
     render json: { status: 'SUCCESS', message: 'All subs for user', data: @user_subscriptions }, status: :ok
+  end
+
+  def next_billing_date
+    find_subscription
+    @subscription.billing_date + 1.month
   end
 
   private
@@ -44,7 +51,7 @@ class SubscriptionsController < ApiController
   end
 
   def subscription_params
-    params[:subscription].permit(:user_id, :paid, :billing_date, :amount, :cc_number, :cc_expiration, :cc_code)
+    params[:subscription].permit(:user_id, :paid, :billing_date, :cost, :cc_number, :cc_expiration, :cc_code)
   end
 
   def find_subscription
