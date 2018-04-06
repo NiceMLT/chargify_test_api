@@ -1,13 +1,12 @@
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe SubscriptionsController, type: :controller do
   describe 'GET #show' do
     ## get a single subscription
     before do
-      get :show, id: subscription.id
+      @sub1 = create(:subscription)
+      get :show, id: @sub1.id
     end
-
-    let(:subscription) { Subscription.create(paid: true, billing_date: Time.now) }
 
     it 'returns http success' do
       expect(response).to have_http_status(:success)
@@ -17,7 +16,7 @@ RSpec.describe SubscriptionsController, type: :controller do
     it 'response with JSON body containing paid status and next billing date' do
       hash_body = nil
       expect { hash_body = JSON.parse(response.body).with_indifferent_access }.not_to raise_exception
-      expect(hash_body).to match(id: subscription.id,
+      expect(hash_body).to match(id: @sub1.id,
                                  paid: true,
                                  billing_date: 1.month.from_now)
     end
