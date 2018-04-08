@@ -8,16 +8,17 @@ class SubscriptionsController < ApiController
   end
 
   # POST /subscriptions
-  def create
+  def create(attempts = 0)
     requester = Requester.new
-    if requester.paid?
-      subscription = Subscription.new(subscription_params)
-      return 'subscription created and payment successful'
-    elsif requester.insufficient_funds?
-      return 'subscription not created due to insufficient funds'
+
+    if requester.insufficient_funds?
+      render json: { message: 'funds not ok' }, status: :unprocessable_entity
+    elsif requester.paid?
+      subscription = Subscription.create!(subscription_params.merge(payment_id: requester.payment_id))
+      render json: { message: 'funds ok', subscription_id: subscription.id }, status: :created
     elsif requester.error?
-      sleep 15
-      # retry
+      return create(attempts + 1) if attempts < 3
+      render json: { message: "Gateway Down, Try Again Later" }, status: :unprocessable_entity
     end
   end
 
@@ -33,12 +34,6 @@ class SubscriptionsController < ApiController
     render json: { status: 'SUCCESS', message: 'Got your sub, bro', data: @subscription }, status: :ok
   end
 
-  # GET /subscriptions/user_id?{@user}
-  def show_all_for_user
-    find_subscriptions_for_user
-    render json: { status: 'SUCCESS', message: 'All subs for user', data: @user_subscriptions }, status: :ok
-  end
-
   def next_billing_date
     find_subscription
     @subscription.billing_date + 1.month
@@ -51,14 +46,10 @@ class SubscriptionsController < ApiController
   end
 
   def subscription_params
-    params[:subscription].permit(:user_id, :paid, :billing_date, :cost, :cc_number, :cc_expiration, :cc_code)
+    params.require(:subscription).permit(:cc_number, :cc_expiration, :cc_code)
   end
 
   def find_subscription
     @subscription = Subscription.find(params[:id])
-  end
-
-  def find_subscriptions_for_user
-    @user_subscriptions = Subscription.find(params[:email])
   end
 end

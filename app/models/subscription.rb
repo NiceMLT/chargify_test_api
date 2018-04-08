@@ -1,5 +1,5 @@
 class Subscription < ActiveRecord::Base
 
-has_many :subscriptions
+has_one :user
 
 end
