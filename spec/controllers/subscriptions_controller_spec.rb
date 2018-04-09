@@ -1,5 +1,4 @@
 require 'rails_helper'
-require 'pry'
 
 RSpec.describe SubscriptionsController, type: :controller do
   let(:json) { JSON.parse(response.body) }
@@ -66,14 +65,13 @@ RSpec.describe SubscriptionsController, type: :controller do
       end
 
       it 'does not create a new subscription' do
-        expect {
+        expect do
           make_request
-        }.not_to change { Subscription.count }
+        end.not_to change { Subscription.count }
       end
     end
 
     context 'when the billing gateway errors and the attempts are below 3' do
-
       it 'returns a success if the third attempt is successful' do
         bad_requester = instance_double('Requester', insufficient_funds?: false, paid?: false, error?: true)
         good_requester = instance_double('Requester', insufficient_funds?: false, paid?: true, error?: false, payment_id: '1234567')
@@ -93,7 +91,7 @@ RSpec.describe SubscriptionsController, type: :controller do
         make_request
 
         expect(response).to have_http_status(422)
-        expect(json["message"]).to eq("Gateway Down, Try Again Later")
+        expect(json['message']).to eq('Gateway Down, Try Again Later')
       end
     end
   end
@@ -115,7 +113,7 @@ RSpec.describe SubscriptionsController, type: :controller do
         'status' => 'SUCCESS',
         'message' => 'Got your sub, bro',
         'data' => include(
-          'id' => subscription.id,
+          'id' => subscription.id
         )
       )
     end
@@ -129,7 +127,6 @@ RSpec.describe SubscriptionsController, type: :controller do
       @subscription3 = create(:subscription)
       get :index
     end
-
 
     it 'returns http success' do
       expect(response).to have_http_status(:success)

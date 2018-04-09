@@ -1,5 +1,4 @@
 class SubscriptionsController < ApiController
-
   # GET /subscriptions/new
   def new
     @subscription = Subscription.new
@@ -16,11 +15,11 @@ class SubscriptionsController < ApiController
       render json: { message: 'Subscription Created and Payment Processed', subscription_id: subscription.id }, status: :created
     elsif requester.error?
       return create(attempts + 1) if attempts < 3
-      render json: { message: "Gateway Down, Try Again Later" }, status: :unprocessable_entity
+      render json: { message: 'Gateway Down, Try Again Later' }, status: :unprocessable_entity
     end
   end
 
-  #GET /subscriptions
+  # GET /subscriptions
   def index
     subscriptions = Subscription.all
     render json: { status: 'SUCCESS', message: 'Loaded all subscriptions', data: subscriptions }, status: :ok

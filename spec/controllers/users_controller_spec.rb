@@ -1,12 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe UsersController, type: :controller do
-  describe "POST create" do
+  describe 'POST create' do
     def make_request
       post :create, params: {
         user: {
-          name: "Anew Yooser",
-          email: "anew@yooser.com"
+          name: 'Anew Yooser',
+          email: 'anew@yooser.com'
         }
       }
     end
@@ -15,8 +15,8 @@ RSpec.describe UsersController, type: :controller do
       make_request
 
       expect(User.last).to have_attributes(
-        name: "Anew Yooser",
-        email: "anew@yooser.com"
+        name: 'Anew Yooser',
+        email: 'anew@yooser.com'
       )
     end
   end
