@@ -124,30 +124,25 @@ RSpec.describe SubscriptionsController, type: :controller do
   describe 'INDEX #index' do
     ## Index of all subscriptions
     before do
+      @subscription = create(:subscription)
+      @subscription2 = create(:subscription)
+      @subscription3 = create(:subscription)
       get :index
     end
 
-    let(:subscriptions) { Subscription.all }
-    let(:sub1) { Subscription.create!(paid: true, billing_date: Time.now, cost: 100) }
-    let(:sub2) { Subscription.create!(paid: true, billing_date: Time.now, cost: 100) }
 
     it 'returns http success' do
       expect(response).to have_http_status(:success)
     end
 
     it 'response with JSON body containing expected Subscription attributes' do
-      binding.pry
       expect(json).to include(
         'status' => 'SUCCESS',
-        'message' => 'Loaded all subscriptions',
-        'data' => include(
-          'id' => sub1.id,
-        )
+        'message' => 'Loaded all subscriptions'
+      )
+      expect(json['data'].first).to include(
+        'id' => @subscription.id
       )
     end
   end
-
-  ## bonus (should this be in the model?)
-  # card is returned as valid if it meets validation requirements
-  # card is returned as invalid if it fails validation requirements
 end

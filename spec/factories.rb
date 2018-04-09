@@ -1,8 +1,8 @@
 FactoryBot.define do
 
   factory :user do
-    name "Factoree Botbot"
-    email "factoree@botbot.com"
+    name "Anew Yooser"
+    email "anew@yooser.com"
   end
 
   factory :subscription do

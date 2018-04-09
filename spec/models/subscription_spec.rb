@@ -1,13 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe Subscription, :type => :model do
-  
+
   before(:all) do
     @sub1 = create(:subscription)
   end
 
   it "should know it's billing_date" do
-    expect(@sub1.billing_date).to eq("March 1, 2018")
+    expect(@sub1.billing_date).to eq("Thu, 05 Apr 2018")
   end
 
   it "should know it's cc_number" do

@@ -1,7 +1,5 @@
 class SubscriptionsController < ApiController
 
-  before_action :create_session, only: %i[create]
-
   # GET /subscriptions/new
   def new
     @subscription = Subscription.new
@@ -40,10 +38,6 @@ class SubscriptionsController < ApiController
   end
 
   private
-
-  def create_session
-    HTTParty.get('https://gist.github.com/freezepl/2a75c29c881982645156f5ccf8d1b139/')
-  end
 
   def subscription_params
     params.require(:subscription).permit(:cc_number, :cc_expiration, :cc_code)
