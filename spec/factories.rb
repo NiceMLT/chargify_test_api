@@ -6,6 +6,7 @@ FactoryBot.define do
   end
 
   factory :subscription do
+
     paid "true"
     billing_date "Thu, 05 Apr 2018"
     cc_number "4011100110011001"

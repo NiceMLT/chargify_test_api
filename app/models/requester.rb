@@ -14,7 +14,7 @@ class Requester
   end
 
   def error?
-    status != 200
+    !@request.success?
   end
 
   def body
@@ -25,6 +25,4 @@ class Requester
   def payment_id
     return body["id"] if paid?
   end
-  #{"id"=>"c322a26ccb291c1b", "paid"=>false, "failure_message"=>"insufficient_funds"}
-  #{"id"=>"3e3136132d4b7bb3", "paid"=>true, "failure_message"=>nil}
 end
