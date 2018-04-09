@@ -1,138 +1,148 @@
 require 'rails_helper'
+require 'pry'
 
 RSpec.describe SubscriptionsController, type: :controller do
-  describe 'GET #show' do
-    ## get a single subscription
-    before do
-      @sub1 = create(:subscription)
-      get :show, id: @sub1.id
+  let(:json) { JSON.parse(response.body) }
+
+  describe 'POST #create' do
+    def make_request
+      post :create, params: {
+        subscription: {
+          cc_number: '1',
+          cc_expiration: '04/2041',
+          cc_code: '867'
+        }
+      }
     end
 
+    context 'when the credit card is successfully charged' do
+      before do
+        expect(Requester).to receive(:new).and_return(requester)
+      end
+
+      let(:requester) { instance_double('Requester', paid?: true, insufficient_funds?: false, payment_id: '123456') }
+
+      it 'returns a 201 created' do
+        make_request
+
+        expect(response).to have_http_status(201)
+      end
+
+      it 'creates a new subscription' do
+        make_request
+
+        expect(Subscription.last).to have_attributes(
+          cc_number: '1',
+          cc_expiration: '04/2041',
+          cc_code: '867',
+          payment_id: '123456'
+        )
+      end
+
+      it 'returns "funds ok" for the message attribute' do
+        make_request
+
+        expect(json).to include('message' => 'funds ok')
+      end
+    end
+
+    context 'when the credit card has insufficient funds' do
+      before do
+        expect(Requester).to receive(:new).and_return(requester)
+      end
+
+      let(:requester) { instance_double('Requester', insufficient_funds?: true, paid?: false).as_null_object }
+
+      it 'returns a 422 unproccessable entity' do
+        make_request
+
+        expect(response).to have_http_status(422)
+      end
+
+      it 'returns "funds not ok" for the message attribute' do
+        make_request
+
+        expect(json).to include('message' => 'funds not ok')
+      end
+
+      it 'does not create a new subscription' do
+        expect {
+          make_request
+        }.not_to change { Subscription.count }
+      end
+    end
+
+    context 'when the billing gateway errors and the attempts are below 3' do
+
+      it 'returns a success if the third attempt is successful' do
+        bad_requester = instance_double('Requester', insufficient_funds?: false, paid?: false, error?: true)
+        good_requester = instance_double('Requester', insufficient_funds?: false, paid?: true, error?: false, payment_id: '1234567')
+        expect(Requester).to receive(:new).and_return(bad_requester, bad_requester, good_requester)
+
+        make_request
+
+        expect(response).to have_http_status(201)
+      end
+    end
+
+    context 'when the billing gateway errors and the attempts to hit the gateway exceeds 3' do
+      it 'returns a 422 if attempts exceed 3' do
+        bad_requester = instance_double('Requester', insufficient_funds?: false, paid?: false, error?: true)
+        expect(Requester).to receive(:new).exactly(4).times.and_return(bad_requester)
+
+        make_request
+
+        expect(response).to have_http_status(422)
+        expect(json["message"]).to eq("Gateway Down, Try Again Later")
+      end
+    end
+  end
+
+  describe 'GET #show' do
     it 'returns http success' do
+      get :show, params: { id: create(:subscription).id }
+
       expect(response).to have_http_status(:success)
     end
 
     # #returns next billing date for a particular subscription given a subscription id
-    it 'response with JSON body containing paid status and next billing date' do
-      hash_body = nil
-      expect { hash_body = JSON.parse(response.body).with_indifferent_access }.not_to raise_exception
-      expect(hash_body).to match(id: @sub1.id,
-                                 paid: true,
-                                 billing_date: 1.month.from_now)
-    end
-  end
+    it 'returns a response with JSON body containing paid status and next billing date' do
+      subscription = create(:subscription)
 
-  describe 'GET #show_all_for_user' do
-    # #returns all valid subscriptions given a user
+      get :show, params: { id: subscription.id }
 
-    before do
-      get :show_all_for_user, email: user.email
-    end
-
-    let(:user) { User.create(name: 'Test User', email: 'totally@realemail.com') }
-    let(:user_sub1) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
-    let(:user_sub2) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
-    let(:user_sub3) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
-
-    it 'returns http success' do
-      expect(response).to have_http_status(:success)
-    end
-
-    # #returns all subscriptions given a specific user
-    it 'response with JSON body containing all subs for user' do
-      hash_body = nil
-      expect { hash_body = JSON.parse(response.body).with_indifferent_access }.not_to raise_exception
-      expect(hash_body.first).to match(id: user_sub1.id,
-                                       paid: true,
-                                       cost: 100)
-      expect(hash_body.last).to match(id: user_sub3.id,
-                                      paid: true,
-                                      cost: 100)
+      expect(json).to include(
+        'status' => 'SUCCESS',
+        'message' => 'Got your sub, bro',
+        'data' => include(
+          'id' => subscription.id,
+        )
+      )
     end
   end
 
   describe 'INDEX #index' do
     ## Index of all subscriptions
     before do
+      @subscription = create(:subscription)
+      @subscription2 = create(:subscription)
+      @subscription3 = create(:subscription)
       get :index
     end
 
-    let(:subscriptions) { Subscription.all }
-    let(:sub1) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
-    let(:sub2) { Subscription.create(paid: true, billing_date: Time.now, user_id: user.id, cost: 100) }
 
     it 'returns http success' do
       expect(response).to have_http_status(:success)
     end
 
     it 'response with JSON body containing expected Subscription attributes' do
-      hash_body = nil
-      expect { hash_body = JSON.parse(response.body).with_indifferent_access }.not_to raise_exception
-      expect(hash_body.first).to match(id: subscriptions.first.id,
-                                       paid: true,
-                                       cost: 100)
+      expect(json).to include(
+        'status' => 'SUCCESS',
+        'message' => 'Loaded all subscriptions'
+      )
+      expect(json['data'].first).to include(
+        'id' => @subscription.id
+      )
     end
   end
-
-  describe 'CREATE #create' do
-
-    let(:good_sub) { Subscription.create(paid: true, billing_date: Time.now, cost: 100) }
-    let(:bad_sub) { Subscription.create(paid: false) }
-
-    describe 'auth' do
-      it 'returns not authorized if no authed session is present' do
-        expect(response.body).to_be "Not Authorized"
-      end
-    end
-
-    describe 'Success' do
-      # subscription is persisted in the database if successful
-      it 'creates the subscription in the database' do
-        expect(good_sub.id).to_not be_nil
-      end
-
-      # api returns a message of "subscription created and payment successful" if successful
-      it 'returns subscription created and payment successful when the payment is successful' do
-        expect(good_sub.response.body).to_be 'subscription created and payment successful'
-      end
-
-      it 'returns a response with JSON body containing paid status and nil failure_message' do
-        hash_body = nil
-        expect { hash_body = JSON.parse(good_sub.response.body).with_indifferent_access }.not_to raise_exception
-        expect(hash_body).to match(paid: true,
-                                   failure_message: nil)
-      end
-    end
-
-    describe 'Failure' do
-      # subscription is not persisted in the database if insufficient funds
-      it 'does not persist the subscription in the database' do
-        expect(bad_sub.id).to be_nil
-      end
-
-      # api returns a message of "subscription not created due to insufficient funds" if unsuccessful due to NSF
-      it 'returns subscription not created due to insufficient funds when the payment is insufficient funds' do
-        expect(bad_sub.response.body).to_be 'subscription not created due to insufficient funds'
-      end
-
-      it 'returns a response with JSON body containing paid status and failure_message' do
-        hash_body = nil
-        expect { hash_body = JSON.parse(bad_sub.response.body).with_indifferent_access }.not_to raise_exception
-        expect(hash_body).to match(paid: false,
-                                   failure_message: 'insufficient_funds')
-      end
-    end
-
-    # describe "Timeout" do
-    #   #timeout
-    #   # subscription charge is retried if the payment gateway times out
-    #   # it "retries on timeout or error" do
-    #   #
-    #   # end
-    # end
-  end
-
-  ## bonus (should this be in the model?)
-  # card is returned as valid if it meets validation requirements
-  # card is returned as invalid if it fails validation requirements
 end
