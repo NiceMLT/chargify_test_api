@@ -39,10 +39,10 @@ RSpec.describe SubscriptionsController, type: :controller do
         )
       end
 
-      it 'returns "funds ok" for the message attribute' do
+      it 'returns "Subscription Created and Payment Processed" for the message attribute' do
         make_request
 
-        expect(json).to include('message' => 'funds ok')
+        expect(json).to include('message' => 'Subscription Created and Payment Processed')
       end
     end
 
@@ -59,10 +59,10 @@ RSpec.describe SubscriptionsController, type: :controller do
         expect(response).to have_http_status(422)
       end
 
-      it 'returns "funds not ok" for the message attribute' do
+      it 'returns "Subscription Not Created Due to Insufficient Funds" for the message attribute' do
         make_request
 
-        expect(json).to include('message' => 'funds not ok')
+        expect(json).to include('message' => 'Subscription Not Created Due to Insufficient Funds')
       end
 
       it 'does not create a new subscription' do
@@ -140,9 +140,8 @@ RSpec.describe SubscriptionsController, type: :controller do
         'status' => 'SUCCESS',
         'message' => 'Loaded all subscriptions'
       )
-      expect(json['data'].first).to include(
-        'id' => @subscription.id
-      )
+
+      expect(json['data'].pluck('id')).to include(@subscription.id, @subscription2.id, @subscription3.id)
     end
   end
 end

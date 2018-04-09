@@ -10,10 +10,10 @@ class SubscriptionsController < ApiController
     requester = Requester.new
 
     if requester.insufficient_funds?
-      render json: { message: 'funds not ok' }, status: :unprocessable_entity
+      render json: { message: 'Subscription Not Created Due to Insufficient Funds' }, status: :unprocessable_entity
     elsif requester.paid?
       subscription = Subscription.create!(subscription_params.merge(payment_id: requester.payment_id))
-      render json: { message: 'funds ok', subscription_id: subscription.id }, status: :created
+      render json: { message: 'Subscription Created and Payment Processed', subscription_id: subscription.id }, status: :created
     elsif requester.error?
       return create(attempts + 1) if attempts < 3
       render json: { message: "Gateway Down, Try Again Later" }, status: :unprocessable_entity
