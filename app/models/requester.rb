@@ -1,8 +1,7 @@
 class Requester
-
   def initialize
     auth = { username: 'billing', password: 'gateway' }
-    @request ||= HTTParty.get('http://localhost:4567/validate', basic_auth: auth, headers: { 'Content-Type' => 'application/json', 'Accept' => 'application/json'})
+    @request ||= HTTParty.get('http://localhost:4567/validate', basic_auth: auth, headers: { 'Content-Type' => 'application/json', 'Accept' => 'application/json' })
   end
 
   def insufficient_funds?
@@ -10,7 +9,7 @@ class Requester
   end
 
   def paid?
-    body["paid"]
+    body['paid']
   end
 
   def error?
@@ -23,6 +22,6 @@ class Requester
   end
 
   def payment_id
-    return body["id"] if paid?
+    return body['id'] if paid?
   end
 end

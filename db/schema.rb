@@ -10,30 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180406195007) do
-
+ActiveRecord::Schema.define(version: 20_180_406_195_007) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+  enable_extension 'plpgsql'
 
-  create_table "subscriptions", force: :cascade do |t|
-    t.bigint "user_id"
-    t.string "paid"
-    t.datetime "billing_date"
-    t.integer "cost"
-    t.string "cc_number"
-    t.string "cc_expiration"
-    t.string "cc_code"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string "payment_id"
-    t.index ["user_id"], name: "index_subscriptions_on_user_id"
+  create_table 'subscriptions', force: :cascade do |t|
+    t.bigint 'user_id'
+    t.string 'paid'
+    t.datetime 'billing_date'
+    t.integer 'cost'
+    t.string 'cc_number'
+    t.string 'cc_expiration'
+    t.string 'cc_code'
+    t.datetime 'created_at'
+    t.datetime 'updated_at'
+    t.string 'payment_id'
+    t.index ['user_id'], name: 'index_subscriptions_on_user_id'
   end
 
-  create_table "users", force: :cascade do |t|
-    t.string "name"
-    t.string "email"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+  create_table 'users', force: :cascade do |t|
+    t.string 'name'
+    t.string 'email'
+    t.datetime 'created_at', null: false
+    t.datetime 'updated_at', null: false
   end
-
 end
